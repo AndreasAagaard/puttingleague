@@ -1,5 +1,6 @@
 "use server";
-import RoundsOverviewTemplate from "./template";
+
+import { GroupSelectionComponent } from "@/components/group-selection";
 
 export default async function Page() {
   const groups = [
@@ -42,6 +43,5 @@ export default async function Page() {
       players: [{ name: "Amelia" }, { name: "Isabella" }, { name: "Ethan" }],
     },
   ];
-  console.log(groups);
-  return <RoundsOverviewTemplate />;
+  return <GroupSelectionComponent groups={groups} />;
 }
