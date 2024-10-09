@@ -13,19 +13,29 @@ import { updateRoundStatus } from "@/app/repository/update.round.repository";
 import { useRouter } from "next/navigation";
 import { Player } from "@/app/repository/get.players.by.round.repository";
 import { deletePlayerById } from "@/app/repository/delete.player.repository";
+import { generateGroups } from "@/app/repository/generate.cards.by.round.repository";
+import { Group } from "./group-selection";
+import { deleteGroupsByRoundId } from "@/app/repository/delete.groups.by.round.repository";
 
 interface SingleRoundProps {
   round: Round;
   existingPlayers: Player[];
+  existingGroups: Group[];
 }
 
 export function SingleRoundComponent({
   round,
   existingPlayers,
+  existingGroups,
 }: SingleRoundProps) {
   const router = useRouter();
   const [players, setPlayers] = useState<Player[]>(existingPlayers);
+  const [groups, setGroups] = useState<Group[]>(existingGroups);
   const [newPlayerName, setNewPlayerName] = useState("");
+  const [cardSize, setCardSize] = useState(4);
+  const [groupsGenerated] = useState(groups.length > 0);
+  // make useEffect to set bool if groups are generated
+  // if groups are generated, show button to delete groups
 
   const addPlayer = () => {
     if (newPlayerName.trim()) {
@@ -42,6 +52,11 @@ export function SingleRoundComponent({
       setNewPlayerName("");
       insertPlayer({ name: newPlayerName.trim(), round_id: round.id });
     }
+  };
+
+  const generateGroupsOnRound = async () => {
+    await generateGroups(round.id, cardSize);
+    router.refresh();
   };
 
   return (
@@ -91,7 +106,7 @@ export function SingleRoundComponent({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle>Spillere</CardTitle>
         </CardHeader>
@@ -108,7 +123,7 @@ export function SingleRoundComponent({
                 Tilføj
               </Button>
             </div>
-            <ScrollArea className="h-[200px]">
+            <ScrollArea className="max-h-[500px] min-h-[200px]">
               <ul className="space-y-2">
                 {players.map((player, index) => (
                   <li key={index} className="bg-secondary p-2 rounded-md">
@@ -121,22 +136,93 @@ export function SingleRoundComponent({
                       }}
                     >
                       {player.name}
-                      <Button
-                        onClick={() => {
-                          deletePlayerById(player.id);
-                          setPlayers(players.filter((p) => p.id !== player.id));
-                        }}
-                        size={"sm"}
-                        variant={"destructive"}
-                      >
-                        <XIcon className="h-4 w-4" color="black" />
-                      </Button>
+                      {groupsGenerated ? null : (
+                        <Button
+                          onClick={() => {
+                            deletePlayerById(player.id);
+                            setPlayers(
+                              players.filter((p) => p.id !== player.id),
+                            );
+                            router.refresh();
+                          }}
+                          size={"sm"}
+                          variant={"destructive"}
+                        >
+                          <XIcon className="h-4 w-4" color="black" />
+                        </Button>
+                      )}
                     </div>
                   </li>
                 ))}
               </ul>
             </ScrollArea>
           </div>
+        </CardContent>
+      </Card>
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Grupper</CardTitle>
+            {groupsGenerated ? (
+              <Button
+                onClick={() => {
+                  deleteGroupsByRoundId(groups[0].roundId);
+                  setGroups([]);
+                  router.refresh();
+                }}
+                size={"sm"}
+                variant={"destructive"}
+              >
+                <XIcon className="h-4 w-4" color="black" />
+              </Button>
+            ) : null}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {groupsGenerated ? (
+            <div className="space-y-4">
+              <ScrollArea className="max-h-[500px] min-h-[200px]">
+                <ul className="space-y-2">
+                  {groups.map((group, index) => (
+                    <li key={index} className="bg-secondary p-2 rounded-md">
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          padding: "5px 10px",
+                        }}
+                      >
+                        <div>
+                          <b>Gruppe {group.card}</b>
+                          <ul className="space-y-2">
+                            {group.players.map((player, index) => (
+                              <li key={index}>{player.name}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex space-x-2">
+                <Input
+                  placeholder="Antal spillere pr. gruppe"
+                  type="number"
+                  value={cardSize}
+                  onChange={(e) => setCardSize(parseInt(e.target.value))}
+                />
+                <Button onClick={generateGroupsOnRound}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Generer grupper
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

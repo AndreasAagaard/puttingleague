@@ -4,12 +4,13 @@ import { DB } from "@/db/query"; // Ensure this imports your sqlite3 database in
 interface Player {
   id: number;
   name: string;
-  groupId: number;
+  card: number;
+  roundId: number;
 }
 
 export const getGroupsByRoundId = (roundId: number): Promise<Group[]> => {
   const sql = `
-    SELECT players.id, name, groups.id as groupId
+    SELECT players.id, name, groups.'group' as "card", players.round_id as "roundId"
     FROM players
     LEFT JOIN groups ON players.id = groups.player_id
     WHERE round_id = ? AND groups.id IS NOT NULL
@@ -21,6 +22,7 @@ export const getGroupsByRoundId = (roundId: number): Promise<Group[]> => {
         console.error("Error fetching players by roundId:", err);
         return reject(err);
       }
+      console.log(rows);
       resolve(mapPlayersToGroups(rows as Player[]));
     });
   });
@@ -29,10 +31,15 @@ export const getGroupsByRoundId = (roundId: number): Promise<Group[]> => {
 const mapPlayersToGroups = (players: Player[]): Group[] => {
   const groupsMap = players.reduce(
     (acc, player) => {
-      if (!acc[player.groupId]) {
-        acc[player.groupId] = { card: player.groupId, players: [] };
+      if (!acc[player.card]) {
+        acc[player.card] = {
+          id: player.id,
+          card: player.card,
+          roundId: player.roundId,
+          players: [],
+        };
       }
-      acc[player.groupId].players.push(player);
+      acc[player.card].players.push(player);
       return acc;
     },
     {} as Record<number, Group>,

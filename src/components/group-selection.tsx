@@ -11,8 +11,10 @@ interface Player {
 }
 
 export interface Group {
+  id: number;
   card: number;
   players: Player[];
+  roundId: number;
 }
 
 export interface GroupSelectionProps {
