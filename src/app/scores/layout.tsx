@@ -10,12 +10,10 @@ interface ScoresTemplateProps {
 function ScoresTemplate({ data, test }: ScoresTemplateProps) {
   const searchParams = useSearchParams();
   const cardId = searchParams.get("card");
-  console.log("Props in ScoresTemplate:", { data, test });
 
   if (!cardId) {
     return <div>Card not found</div>;
   }
-  console.log("Client-side data:", data, cardId, test);
   return (
     <MobileOptimizedFlexScoreInputComponent
       playerNames={

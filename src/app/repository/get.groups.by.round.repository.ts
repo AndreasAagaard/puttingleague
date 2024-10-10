@@ -22,7 +22,6 @@ export const getGroupsByRoundId = (roundId: number): Promise<Group[]> => {
         console.error("Error fetching players by roundId:", err);
         return reject(err);
       }
-      console.log(rows);
       resolve(mapPlayersToGroups(rows as Player[]));
     });
   });

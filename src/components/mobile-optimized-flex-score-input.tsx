@@ -7,30 +7,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Player } from "@/app/repository/get.players.by.round.repository";
 
-interface Player {
-  name: string;
-  scores: number[][];
+interface Scores {
+  station: number;
+  makes: { attempt: number; putts: number };
 }
 
+export interface PlayerWithScores {
+  id: number;
+  name: string;
+  scores: Scores[];
+}
 interface ScoreInputProps {
-  playerNames: string[];
+  existingPlayers: Player[];
   stations: number;
   puttsPerStation: { rounds: number; putts: number };
 }
 
 export function MobileOptimizedFlexScoreInputComponent({
-  playerNames,
+  existingPlayers,
   stations,
   puttsPerStation,
 }: ScoreInputProps) {
-  const [players, setPlayers] = useState<Player[]>(
-    playerNames.map((name) => ({
-      name,
-      scores: Array(stations)
-        .fill([])
-        .map(() => Array(puttsPerStation.rounds).fill(0)),
-    })),
+  const [players, setPlayers] = useState<PlayerWithScores[]>(
+    existingPlayers.map((player) => ({
+      name: player.name,
+      id: player.id,
+      scores: })),
   );
   const [currentStation, setCurrentStation] = useState(1);
 

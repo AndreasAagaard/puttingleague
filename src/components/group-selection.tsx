@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Round } from "@/app/repository/get.rounds.repository";
 
 interface Player {
   name: string;
@@ -19,9 +20,13 @@ export interface Group {
 
 export interface GroupSelectionProps {
   groups: Group[];
+  round: Round;
 }
 
-export function GroupSelectionComponent({ groups }: GroupSelectionProps) {
+export function GroupSelectionComponent({
+  groups,
+  round,
+}: GroupSelectionProps) {
   const router = useRouter();
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
 
