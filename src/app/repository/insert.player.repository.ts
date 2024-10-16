@@ -1,12 +1,13 @@
 "use server";
-import { DB } from "@/db/query";
+import { connectToDatabase } from "../../db/query";
 
 export interface PlayerInsert {
   name: string;
   round_id: number;
 }
 
-export const insertPlayer = (player: PlayerInsert): Promise<void> => {
+export const insertPlayer = async (player: PlayerInsert): Promise<void> => {
+  const db = await connectToDatabase();
   const sql = `
     INSERT INTO players (name, round_id)
     VALUES (?, ?)
@@ -15,7 +16,7 @@ export const insertPlayer = (player: PlayerInsert): Promise<void> => {
   const params = [player.name, player.round_id];
 
   return new Promise((resolve, reject) => {
-    DB.run(sql, params, function (err) {
+    db.run(sql, params, function (err) {
       if (err) {
         console.error("Error inserting player:", err);
         return reject(err);

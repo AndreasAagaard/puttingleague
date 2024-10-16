@@ -1,12 +1,4 @@
 CREATE TABLE sqlite_sequence(name,seq);
-CREATE TABLE IF NOT EXISTS "players" (
-	"id"	INTEGER NOT NULL UNIQUE,
-	"name"	TEXT NOT NULL,
-	"round_id"	INTEGER NOT NULL,
-	"dateCreated"	TEXT NOT NULL DEFAULT 'datetime()',
-	PRIMARY KEY("id" AUTOINCREMENT),
-	FOREIGN KEY("round_id") REFERENCES "rounds"("id")
-);
 CREATE TABLE IF NOT EXISTS "scores" (
 	"id"	INTEGER NOT NULL UNIQUE,
 	"station_number"	INTEGER NOT NULL,
@@ -24,5 +16,19 @@ CREATE TABLE IF NOT EXISTS "rounds" (
 	"stations_rounds"	INT NOT NULL,
 	"stations_putts"	INT NOT NULL,
 	"dateCreated"	TEXT NOT NULL DEFAULT 'datetime()',
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "players" (
+	"id"	INTEGER NOT NULL UNIQUE,
+	"name"	TEXT NOT NULL,
+	"round_id"	INTEGER NOT NULL,
+	"dateCreated"	TEXT NOT NULL DEFAULT 'datetime()',
+	PRIMARY KEY("id" AUTOINCREMENT),
+	FOREIGN KEY("round_id") REFERENCES "rounds"("id")
+);
+CREATE TABLE IF NOT EXISTS "groups" (
+	"id"	INTEGER NOT NULL UNIQUE,
+	"player_id"	INTEGER NOT NULL,
+	"group"	INTEGER NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );

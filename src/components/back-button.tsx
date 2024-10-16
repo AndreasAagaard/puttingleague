@@ -15,7 +15,7 @@ export function BackButtonComponent({ className = "" }: BackButtonProps) {
     <Button
       variant="ghost"
       size="icon"
-      className={`absolute top-14 left-4 ${className}`}
+      className={`absolute top-4 left-4${className}`}
       onClick={() => router.back()}
       aria-label="Go back"
     >

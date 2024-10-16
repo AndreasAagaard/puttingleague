@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Player } from "@/app/repository/get.players.by.round.repository";
+import { updateScore } from "@/app/repository/update.score.repository";
+import { useParams, useRouter } from "next/navigation";
 
-interface Scores {
+export interface Scores {
   station: number;
-  makes: { attempt: number; putts: number };
+  makes: { attempt: number; putts: number }[];
 }
 
 export interface PlayerWithScores {
@@ -19,47 +20,73 @@ export interface PlayerWithScores {
   name: string;
   scores: Scores[];
 }
-interface ScoreInputProps {
-  existingPlayers: Player[];
+
+export interface RoundSettings {
   stations: number;
   puttsPerStation: { rounds: number; putts: number };
 }
 
+interface ScoreInputProps {
+  existingPlayers: PlayerWithScores[];
+  settings: RoundSettings;
+}
+
 export function MobileOptimizedFlexScoreInputComponent({
   existingPlayers,
-  stations,
-  puttsPerStation,
+  settings,
 }: ScoreInputProps) {
+  const router = useRouter();
+  const params = useParams<{ round: string; group: string }>();
   const [players, setPlayers] = useState<PlayerWithScores[]>(
     existingPlayers.map((player) => ({
       name: player.name,
       id: player.id,
-      scores: })),
+      scores: player.scores,
+    })),
   );
   const [currentStation, setCurrentStation] = useState(1);
 
-  const updateScore = (
+  const updateScoreAsync = async (
     playerIndex: number,
     roundIndex: number,
     score: number,
   ) => {
     const newPlayers = [...players];
-    newPlayers[playerIndex].scores[currentStation - 1][roundIndex] = score;
+    const playerScores = newPlayers[playerIndex].scores;
+    const stationScores = playerScores.find(
+      (s) => s.station === currentStation,
+    );
+
+    if (stationScores) {
+      stationScores.makes[roundIndex].putts = score;
+    }
+
     setPlayers(newPlayers);
+
+    try {
+      await updateScore({
+        player_id: newPlayers[playerIndex].id,
+        station_number: currentStation,
+        attempt: roundIndex,
+        score: score,
+      });
+    } catch (error) {
+      console.error("Error updating score:", error);
+    }
   };
 
-  const calculateTotalScore = (scores: number[][]) => {
-    return scores.reduce(
-      (stationSum, station) =>
-        stationSum + station.reduce((roundSum, round) => roundSum + round, 0),
-      0,
-    );
+  const calculateTotalScore = (player: PlayerWithScores) => {
+    return player.scores.reduce((sum, station) => {
+      return (
+        sum + station.makes.reduce((sum, attempt) => sum + attempt.putts, 0)
+      );
+    }, 0);
   };
 
   const navigateStation = (direction: "prev" | "next") => {
     if (direction === "prev" && currentStation > 1) {
       setCurrentStation(currentStation - 1);
-    } else if (direction === "next" && currentStation < stations) {
+    } else if (direction === "next" && currentStation < settings.stations) {
       setCurrentStation(currentStation + 1);
     }
   };
@@ -82,56 +109,58 @@ export function MobileOptimizedFlexScoreInputComponent({
             variant="secondary"
             size="icon"
             onClick={() => navigateStation("next")}
-            disabled={currentStation === stations}
+            disabled={currentStation === settings.stations}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </CardHeader>
         <CardContent>
           {players.map((player, playerIndex) => (
-            <Card className="p-3 mt-2">
+            <Card key={playerIndex} className="p-3 mt-2">
               <div key={playerIndex} className="mb-4">
                 <Label className="font-semibold mb-2 block">
                   {player.name}
                 </Label>
-                <div className="grid grid-cols-3 pl-8 pr-8">
-                  {Array.from({ length: puttsPerStation.rounds }).map(
-                    (_, roundIndex) => (
-                      <div
-                        key={roundIndex}
-                        className="flex flex-row items-center"
-                      >
-                        <Label
-                          htmlFor={`player-${playerIndex}-round-${roundIndex}`}
-                          className="text-sm mb-4"
-                        ></Label>
-                        <Input
-                          id={`player-${playerIndex}-round-${roundIndex}`}
-                          type="number"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          min="0"
-                          max={puttsPerStation.putts}
-                          value={
-                            players[playerIndex].scores[currentStation - 1][
-                              roundIndex
-                            ] >= puttsPerStation.putts
-                              ? puttsPerStation.putts
-                              : players[playerIndex].scores[currentStation - 1][
-                                  roundIndex
-                                ]
-                          }
-                          onChange={(e) =>
-                            updateScore(
-                              playerIndex,
-                              roundIndex,
-                              parseInt(e.target.value) || 0,
-                            )
-                          }
-                          className="w-12 h-12 text-center p-0"
-                        />
-                      </div>
-                    ),
+                <div className="grid grid-cols-3 pl-8 pr-4">
+                  {Array.from({ length: settings.puttsPerStation.rounds }).map(
+                    (_, roundIndex) => {
+                      const stationScores = player.scores.find(
+                        (s) => s.station === currentStation,
+                      );
+                      const roundScore =
+                        stationScores?.makes[roundIndex]?.putts || 0;
+
+                      return (
+                        <div
+                          key={roundIndex}
+                          className="flex flex-col items-center ml-8 "
+                        >
+                          <Label
+                            htmlFor={`player-${playerIndex}-round-${roundIndex}`}
+                            className="text-sm mb-4"
+                          >
+                            {roundIndex + 1}. Forsøg
+                          </Label>
+                          <Input
+                            id={`player-${playerIndex}-round-${roundIndex}`}
+                            type="number"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            min="0"
+                            max={settings.puttsPerStation.putts}
+                            value={roundScore}
+                            onChange={(e) =>
+                              updateScoreAsync(
+                                playerIndex,
+                                roundIndex,
+                                parseInt(e.target.value) || 0,
+                              )
+                            }
+                            className="w-12 h-12 text-center p-0"
+                          />
+                        </div>
+                      );
+                    },
                   )}
                 </div>
               </div>
@@ -155,17 +184,17 @@ export function MobileOptimizedFlexScoreInputComponent({
                   <div key={playerIndex}>
                     <h3 className="font-semibold mb-2">{player.name}</h3>
                     <div className="flex flex-wrap gap-3 text-sm">
-                      {player.scores.map((stationScores, stationIndex) => (
+                      {player.scores.map((station, stationIndex) => (
                         <div
                           key={stationIndex}
                           className="flex-1 min-w-[5rem] text-center bg-secondary rounded-md p-1"
                         >
                           <div className="font-thin italic opacity-75">
-                            Hul {stationIndex + 1}
+                            Station {station.station}
                           </div>
                           <div className="p-1 font-semibold">
-                            {stationScores.reduce(
-                              (sum, score) => sum + score,
+                            {station.makes.reduce(
+                              (sum, attempt) => sum + attempt.putts,
                               0,
                             )}
                           </div>
@@ -192,10 +221,10 @@ export function MobileOptimizedFlexScoreInputComponent({
                   >
                     <span>{player.name}:</span>
                     <span className="font-bold">
-                      {calculateTotalScore(player.scores)} /{" "}
-                      {stations *
-                        puttsPerStation.rounds *
-                        puttsPerStation.putts}
+                      {calculateTotalScore(player)} /{" "}
+                      {settings.stations *
+                        settings.puttsPerStation.rounds *
+                        settings.puttsPerStation.putts}
                     </span>
                   </div>
                 ))}
@@ -204,8 +233,11 @@ export function MobileOptimizedFlexScoreInputComponent({
           </Card>
         </TabsContent>
       </Tabs>
-      <Button className="w-full mt-4" onClick={() => console.log(players)}>
-        Submit Scores
+      <Button
+        className="w-full mt-4"
+        onClick={() => router.push(`/rounds/${params.round}/leaderboard`)}
+      >
+        Afslut score
       </Button>
     </div>
   );

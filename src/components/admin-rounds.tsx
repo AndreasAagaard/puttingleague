@@ -48,10 +48,17 @@ export function AdminRoundsComponent({ initialRounds }: AdminRoundsProps) {
       {
         id: rounds.length + 1,
         active: "Active",
+        dateCreated: new Date().toISOString(),
         ...newRound,
       },
     ]);
     router.push(`/admin/rounds/${inserted.id}`);
+  };
+
+  const handleDelete = async (roundId: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent click event from propagating to the Link
+    await deleteRoundById(roundId);
+    setRounds(rounds.filter((r) => r.id !== roundId));
   };
 
   return (
@@ -65,43 +72,37 @@ export function AdminRoundsComponent({ initialRounds }: AdminRoundsProps) {
         <TabsContent value="overview">
           <ScrollArea className="h-[calc(100vh-200px)]">
             <div className="space-y-4">
-              {rounds.map((round, index) => (
-                <Link href={`/admin/rounds/${round.id}`} key={index}>
-                  <Card key={index}>
-                    <CardHeader className="pb-4">
-                      <div className="grid grid-flow-col justify-between items-center">
-                        <Link href={`rounds/${round.id}`}>
-                          <CardTitle className="text-lg">
-                            <div className="flex items-center gap-2">
-                              {round.name}
-                            </div>
-                          </CardTitle>
-                        </Link>
-                        <div className="flex flex-row items-start gap-4">
-                          <Badge
-                            variant={
-                              round.active === "Active"
-                                ? "default"
-                                : "secondary"
-                            }
-                          >
-                            {round.active === "Active" ? "Aktiv" : "Inaktiv"}
-                          </Badge>
-                          <Button
-                            onClick={() => {
-                              deleteRoundById(round.id);
-                              setRounds(
-                                rounds.filter((r) => r.id !== round.id),
-                              );
-                            }}
-                            size={"sm"}
-                            variant={"destructive"}
-                          >
-                            <XIcon className="h-4 w-4" color="black" />
-                          </Button>
-                        </div>
+              {rounds.map((round) => (
+                <Card key={round.id}>
+                  <CardHeader className="pb-4">
+                    <div className="grid grid-flow-col justify-between items-center">
+                      <Link href={`/admin/rounds/${round.id}`}>
+                        <CardTitle className="text-lg">
+                          <div className="flex items-center gap-2">
+                            {round.name}
+                            <CircleArrowRight className="w-5 h-5 text-gray-500" />
+                          </div>
+                        </CardTitle>
+                      </Link>
+                      <div className="flex flex-row items-start gap-4">
+                        <Badge
+                          variant={
+                            round.active === "Active" ? "default" : "secondary"
+                          }
+                        >
+                          {round.active === "Active" ? "Aktiv" : "Inaktiv"}
+                        </Badge>
+                        <Button
+                          onClick={(e) => handleDelete(round.id, e)}
+                          size={"sm"}
+                          variant={"destructive"}
+                        >
+                          <XIcon className="h-4 w-4" color="black" />
+                        </Button>
                       </div>
-                    </CardHeader>
+                    </div>
+                  </CardHeader>
+                  <Link href={`/admin/rounds/${round.id}`}>
                     <CardContent>
                       <dl className="grid grid-cols-2 gap-2 text-sm">
                         <div>
@@ -126,12 +127,8 @@ export function AdminRoundsComponent({ initialRounds }: AdminRoundsProps) {
                         </div>
                       </dl>
                     </CardContent>
-                    <CircleArrowRight
-                      className="absolute right-4 top-32 mt-4 w-6 h-6 text-gray-500"
-                      color="black"
-                    />
-                  </Card>
-                </Link>
+                  </Link>
+                </Card>
               ))}
             </div>
           </ScrollArea>

@@ -27,12 +27,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <meta name="viewport" content="width=1000" />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <BackButtonComponent />
-        <HomeButtonComponent />
-        {children}
+        <div className="min-h-screen flex flex-col">
+          <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b h-14">
+            <div className="container mx-auto h-full px-4 flex justify-between items-center">
+              <div className="flex items-center flex-row">
+                <BackButtonComponent />
+                <HomeButtonComponent />
+              </div>
+            </div>
+          </header>
+          <main className="flex-grow mt-14 px-4 py-4">{children}</main>
+        </div>
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 import { Group } from "@/components/group-selection";
-import { DB } from "@/db/query"; // Ensure this imports your sqlite3 database instance
+import { connectToDatabase } from "@/db/query";
 
 interface Player {
   id: number;
@@ -8,7 +8,8 @@ interface Player {
   roundId: number;
 }
 
-export const getGroupsByRoundId = (roundId: number): Promise<Group[]> => {
+export const getGroupsByRoundId = async (roundId: number): Promise<Group[]> => {
+  const db = await connectToDatabase();
   const sql = `
     SELECT players.id, name, groups.'group' as "card", players.round_id as "roundId"
     FROM players
@@ -17,7 +18,7 @@ export const getGroupsByRoundId = (roundId: number): Promise<Group[]> => {
   `;
 
   return new Promise((resolve, reject) => {
-    DB.all(sql, [roundId], (err, rows) => {
+    db.all(sql, [roundId], (err, rows) => {
       if (err) {
         console.error("Error fetching players by roundId:", err);
         return reject(err);

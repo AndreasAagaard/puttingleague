@@ -1,10 +1,11 @@
 "use server";
-import { DB } from "@/db/query";
+import { connectToDatabase } from "../../db/query";
 
-export const updateRoundStatus = (
+export const updateRoundStatus = async (
   roundId: number,
   isActive: boolean,
 ): Promise<void> => {
+  const db = await connectToDatabase();
   const sql = `
     UPDATE rounds
     SET active = ?
@@ -12,7 +13,7 @@ export const updateRoundStatus = (
   `;
   const active = isActive ? "Active" : "Inactive";
   return new Promise((resolve, reject) => {
-    DB.run(sql, [active, roundId], function (err) {
+    db.run(sql, [active, roundId], function (err) {
       if (err) {
         console.error("Error updating round status:", err);
         reject(err);

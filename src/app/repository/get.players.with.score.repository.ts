@@ -15,8 +15,7 @@ interface PlayerRow {
   putts: number | null;
 }
 
-export const getPlayersInGroupWithScores = async (
-  groupId: number,
+export const getPlayersWithScoresByRound = async (
   roundId: number,
 ): Promise<PlayerWithScores[]> => {
   const db = await connectToDatabase();
@@ -28,15 +27,14 @@ export const getPlayersInGroupWithScores = async (
         s.station_number AS station,
         s.attempt,
         s.score AS putts
-      FROM groups g
-      JOIN players p ON g.player_id = p.id
+      FROM players p
       LEFT JOIN scores s ON p.id = s.player_id
-      WHERE g.'group' = ?
-      AND p.round_id = ?
+      WHERE p.round_id = ?
       ORDER BY p.id, s.station_number, s.attempt
     `;
 
-    db.all(sql, [groupId, roundId], (err, rows: PlayerRow[]) => {
+    // Type the rows as PlayerRow[]
+    db.all(sql, [roundId], (err, rows: PlayerRow[]) => {
       if (err) {
         console.error("Error fetching players with scores:", err);
         return reject(err);

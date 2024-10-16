@@ -15,7 +15,7 @@ export function HomeButtonComponent({ className = "" }: HomeButtonProps) {
     <Button
       variant="ghost"
       size="icon"
-      className={`absolute top-4 left-4 ${className}`}
+      className={`absolute top-4 left-14 ${className}`}
       onClick={() => router.push("/")}
       aria-label="Go to home page"
     >

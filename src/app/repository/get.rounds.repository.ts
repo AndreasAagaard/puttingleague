@@ -1,4 +1,4 @@
-import { DB } from "@/db/query"; // Ensure this imports your sqlite3 database instance
+import { connectToDatabase } from "@/db/query";
 
 export interface Round {
   id: number;
@@ -7,21 +7,32 @@ export interface Round {
   stations: number;
   stations_rounds: number;
   stations_putts: number;
+  dateCreated: string;
 }
 
-export const getRounds = (): Promise<Round[]> => {
+export const getRounds = async (): Promise<Round[]> => {
+  const db = await connectToDatabase();
   const sql = `
-    SELECT id, name, active, stations, stations_rounds, stations_putts
+    SELECT id, name, active, stations, stations_rounds, stations_putts, dateCreated
     FROM rounds
   `;
 
   return new Promise((resolve, reject) => {
-    DB.all(sql, [], (err, rows) => {
+    db.all(sql, [], (err, rows: Round[]) => {
       if (err) {
         console.error("Error fetching rounds:", err);
         return reject(err);
       }
-      resolve(rows as Round[]);
+      const sortedRounds = rows.sort((a, b) => {
+        if (a.active === "Active" && b.active !== "Active") return -1;
+
+        if (a.active !== "Active" && b.active === "Active") return 1;
+
+        return (
+          new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime()
+        );
+      });
+      resolve(sortedRounds);
     });
   });
 };

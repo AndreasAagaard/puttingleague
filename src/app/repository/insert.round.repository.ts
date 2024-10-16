@@ -1,5 +1,6 @@
 "use server";
-import { DB } from "@/db/query";
+
+import { connectToDatabase } from "@/db/query";
 
 export interface RoundInsert {
   name: string;
@@ -7,7 +8,11 @@ export interface RoundInsert {
   stations_rounds: number;
   stations_putts: number;
 }
-export const insertRound = (round: RoundInsert): Promise<{ id: number }> => {
+export const insertRound = async (
+  round: RoundInsert,
+): Promise<{ id: number }> => {
+  const db = await connectToDatabase();
+
   const sql = `
     INSERT INTO rounds (name, stations, stations_rounds, stations_putts)
     VALUES (?, ?, ?, ?)
@@ -21,7 +26,7 @@ export const insertRound = (round: RoundInsert): Promise<{ id: number }> => {
   ];
 
   return new Promise((resolve, reject) => {
-    DB.run(sql, params, function (err) {
+    db.run(sql, params, function (err) {
       if (err) {
         console.error("Error inserting round:", err);
         return reject(err);

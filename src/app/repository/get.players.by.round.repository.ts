@@ -1,4 +1,4 @@
-import { DB } from "@/db/query"; // Ensure this imports your sqlite3 database instance
+import { connectToDatabase } from "../../db/query"; // Ensure this imports your sqlite3 database instance
 
 export interface Player {
   id: number;
@@ -6,7 +6,10 @@ export interface Player {
   roundId: number;
 }
 
-export const getPlayersByRoundId = (roundId: number): Promise<Player[]> => {
+export const getPlayersByRoundId = async (
+  roundId: number,
+): Promise<Player[]> => {
+  const db = await connectToDatabase();
   const sql = `
     SELECT id, name, round_id as roundId
     FROM players
@@ -14,7 +17,7 @@ export const getPlayersByRoundId = (roundId: number): Promise<Player[]> => {
   `;
 
   return new Promise((resolve, reject) => {
-    DB.all(sql, [roundId], (err, rows) => {
+    db.all(sql, [roundId], (err, rows) => {
       if (err) {
         console.error("Error fetching players by roundId:", err);
         return reject(err);

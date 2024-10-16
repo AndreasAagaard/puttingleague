@@ -16,17 +16,13 @@ export function HomepageComponent() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <p className="text-center mb-4 mt-4">
+            Vælg <b>Administrer</b> for at opsætte nye runder
+          </p>
           <p className="text-center mb-4">
-            Velkommen til vores Putting League app! Her kan du holde styr på
-            dine scores, se dine fremskridt og konkurrere med andre spillere.
-            Uanset om du er nybegynder eller erfaren, er dette stedet for at
-            forbedre dine putting-færdigheder og have det sjovt med andre disc
-            golf-entusiaster.
+            Vælg <b>Deltag i runde</b> for at deltage i en aktiv runde
           </p>
-          <p className="text-center">
-            Vælg 'Administrer' for at opsætte nye runder eller 'Se Scorekort'
-            for at deltage i en aktiv runde. God fornøjelse!
-          </p>
+          <p className="text-center mb-4">God fornøjelse!</p>
         </CardContent>
       </Card>
 
@@ -42,7 +38,7 @@ export function HomepageComponent() {
           className="w-full text-lg py-6"
           variant="secondary"
         >
-          Se Scorekort
+          Deltag i runde
         </Button>
       </div>
     </div>

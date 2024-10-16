@@ -10,6 +10,24 @@ body {
     .text-balance {
         text-wrap: balance;
     }
+
+    /* Utility to remove spin buttons from number inputs */
+    .no-spin {
+        /* Chrome, Safari, Edge, Opera */
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        -moz-appearance: textfield;
+    }
+
+    /* Utility to center text for inputs */
+    .text-center {
+        text-align: center;
+    }
 }
 
 @layer base {

@@ -1,8 +1,9 @@
 "use server";
 
-import { DB } from "@/db/query";
+import { connectToDatabase } from "../../db/query";
 
-export const deleteGroupsByRoundId = (roundId: number): Promise<void> => {
+export const deleteGroupsByRoundId = async (roundId: number): Promise<void> => {
+  const db = await connectToDatabase();
   return new Promise((resolve, reject) => {
     const sql = `
       DELETE FROM groups
@@ -11,14 +12,12 @@ export const deleteGroupsByRoundId = (roundId: number): Promise<void> => {
       )
     `;
 
-    DB.run(sql, [roundId], function (err) {
+    db.run(sql, [roundId], function (err) {
       if (err) {
         console.error("Error deleting groups:", err);
         return reject(err);
       }
-      console.log(
-        `Deleted ${this.changes} groups associated with round ID ${roundId}.`,
-      );
+
       resolve();
     });
   });

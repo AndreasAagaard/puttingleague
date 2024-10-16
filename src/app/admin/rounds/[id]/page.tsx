@@ -17,7 +17,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   if (!round) return notFound();
   return (
     <SingleRoundComponent
-      round={round}
+      existingRound={round}
       existingPlayers={players}
       existingGroups={groups}
     />

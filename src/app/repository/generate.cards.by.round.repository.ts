@@ -1,6 +1,8 @@
 "use server";
-import { DB } from "@/db/query";
 import { getPlayersByRoundId, Player } from "./get.players.by.round.repository";
+import { insertScore, Score } from "./insert.score.repository";
+import { getRounds } from "./get.rounds.repository";
+import { connectToDatabase } from "@/db/query";
 
 export const generateGroups = async (
   roundId: number,
@@ -19,6 +21,17 @@ export const generateGroups = async (
     }));
 
     await insertGroups(assignments);
+    const roundSettings = (await getRounds()).find(
+      (round) => round.id === roundId,
+    );
+    if (!roundSettings) throw new Error("Round settings not found");
+    assignments.forEach(async ({ player_id }) => {
+      await insertEmptyScores(
+        player_id,
+        roundSettings.stations,
+        roundSettings.stations_rounds,
+      );
+    });
   } catch (error) {
     console.error("Error generating groups:", error);
     throw error;
@@ -35,13 +48,14 @@ const shuffleArray = (array: unknown[]): void => {
 const insertGroups = async (
   assignments: { player_id: number; group: number }[],
 ): Promise<void> => {
+  const db = await connectToDatabase();
   return new Promise((resolve, reject) => {
-    const insertGroup = DB.prepare(
+    const insertGroup = db.prepare(
       "INSERT INTO groups (player_id, 'group') VALUES (?, ?)",
     );
-    DB.serialize(() => {
+    db.serialize(() => {
       assignments.forEach(({ player_id, group }) => {
-        insertGroup.run(player_id, group, (err) => {
+        insertGroup.run(player_id, group, (err: unknown) => {
           if (err) {
             return reject(err);
           }
@@ -51,4 +65,22 @@ const insertGroups = async (
       resolve();
     });
   });
+};
+
+const insertEmptyScores = async (
+  player_id: number,
+  stations: number,
+  attempt: number,
+): Promise<void> => {
+  for (let i = 0; i < stations; i++) {
+    for (let j = 0; j < attempt; j++) {
+      const score: Score = {
+        station_number: i + 1,
+        score: 0,
+        player_id: player_id,
+        attempt: j + 1,
+      };
+      await insertScore(score);
+    }
+  }
 };

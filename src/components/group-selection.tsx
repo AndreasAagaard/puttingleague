@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Round } from "@/app/repository/get.rounds.repository";
-
-interface Player {
-  name: string;
-}
+import { Player } from "@/app/repository/get.players.by.round.repository";
+import { Trophy } from "lucide-react";
 
 export interface Group {
   id: number;
@@ -36,13 +34,29 @@ export function GroupSelectionComponent({
 
   const handleConfirm = () => {
     if (selectedGroup !== null) {
-      router.push(`/scores?card=${selectedGroup}`);
+      router.push(`/rounds/${round.id}/${selectedGroup}`);
     }
   };
+
+  const navigateToLeaderboard = () => {
+    router.push(`/rounds/${round.id}/leaderboard`);
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-md">
-      <h1 className="text-2xl font-bold mb-6 text-center">Vælg gruppe</h1>
-      <ScrollArea className="h-[calc(100vh-200px)]">
+      <div className="flex justify-around items-center mb-4 ml-3">
+        <h1 className="text-2xl font-bold">Vælg gruppe</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={navigateToLeaderboard}
+          className="flex items-center"
+        >
+          <Trophy className="mr-2 h-4 w-4" />
+          Scores
+        </Button>
+      </div>
+      <ScrollArea className="h-[calc(100vh-240px)]">
         <div className="space-y-4">
           {groups.length > 0 ? (
             groups.map((group) => (
@@ -54,7 +68,7 @@ export function GroupSelectionComponent({
                 onClick={() => handleGroupSelect(group.card)}
               >
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">Card {group.card}</CardTitle>
+                  <CardTitle className="text-lg">Gruppe {group.card}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="list-disc list-inside">

@@ -7,7 +7,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Round } from "@/app/repository/get.rounds.repository";
 import Link from "next/link";
 import { CircleArrowRight, ChevronDown, ChevronUp } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 
 interface RoundsOverviewProps {
@@ -16,12 +20,12 @@ interface RoundsOverviewProps {
 
 export function RoundsOverviewComponent({ rounds }: RoundsOverviewProps) {
   const [isFormerRoundsOpen, setIsFormerRoundsOpen] = useState(false);
-  const activeRounds = rounds.filter(round => round.active === "Active");
-  const formerRounds = rounds.filter(round => round.active !== "Active");
+  const activeRounds = rounds.filter((round) => round.active === "Active");
+  const formerRounds = rounds.filter((round) => round.active !== "Active");
 
   const RoundCard = ({ round }: { round: Round }) => (
     <Link href={`/rounds/${round.id}`}>
-      <Card>
+      <Card className="relative mb-4 mr-4">
         <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <CardTitle className="text-lg">{round.name}</CardTitle>
@@ -54,10 +58,9 @@ export function RoundsOverviewComponent({ rounds }: RoundsOverviewProps) {
             </div>
           </dl>
         </CardContent>
-        <CircleArrowRight
-          className="absolute right-4 top-32 w-6 h-6 text-gray-500"
-          color="black"
-        />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <CircleArrowRight className="w-6 h-6 text-gray-500" color="black" />
+        </div>
       </Card>
     </Link>
   );
